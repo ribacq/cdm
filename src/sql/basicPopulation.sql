@@ -18,8 +18,3 @@ insert into part_of_speech (name) values
 	('adverb'),
 	('adposition')
 ;
-
-insert into part_of_speech (name, parent) values
-	('preposition', 5),
-	('postposition', 5)
-;

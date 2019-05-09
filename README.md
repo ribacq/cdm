@@ -1,2 +1,2 @@
-# conlang-dictionary-manager (cdm)
+# Conlang Dictionary Manager (cdm)
 Relational database for a conlang’s dictionary.
