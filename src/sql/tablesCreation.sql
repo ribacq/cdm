@@ -8,15 +8,16 @@ set schema 'cdm';
 -- lang_type
 create table if not exists language_type (
 	code char(3) primary key,
-	name varchar(32) unique not null,
-	notes varchar(256) null
+	name varchar(1024) unique not null,
+	notes varchar(1024) null
 );
 
 -- language
 create table if not exists language (
 	code char(3) primary key,
+	language_type char(3) not null references language_type(code),
 	name varchar(256) unique not null,
-	lang_type char(3) not null references language_type(code)
+	notes varchar(1024) null
 );
 
 -- language_descent
@@ -36,6 +37,7 @@ create table if not exists part_of_speech (
 -- word
 create table if not exists word (
 	id serial primary key,
+	lang char(3) not null references language(code),
 	orthography varchar(1024) not null,
 	pronounciation varchar(1024) null,
 	notes varchar(1024) null,

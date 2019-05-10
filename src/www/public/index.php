@@ -16,22 +16,29 @@ $app = new \Slim\App(['settings' => $config]);
 $container = $app->getContainer();
 $container['db'] = function($c) {
 	$db = $c['settings']['db'];
-	$pdo = new PDO('psql:host='.$db['host'].';dbname='.$db['dbname'].';user='.$db['user'].';password='.$db['pass'].';port=5432';
+	$pdo = new PDO('pgsql:host='.$db['host'].';dbname='.$db['dbname'].';user='.$db['user'].';password='.$db['pass'].';port=5432');
 	$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 	return $pdo;
 };
+$container['view'] = new \Slim\Views\PhpRenderer('../templates/');
 
-// responses to routes
-$app->get('/', function (Request $request, Response $response, array $args) {
-	$response->getBody()->write("Hello, world!");
+/* ROUTES */
+// /
+$app->get('/', LanguageController::listLanguagesAction());
 
-	return $response;
-});
-$app->get('/hello/{name}', function (Request $request, Response $response, array $args) {
-	$name = $args['name'];
-	$response->getBody()->write("Hello, $name!");
+// /lang, /lang/
+$app->get('/lang', LanguageController::listLanguagesAction());
 
-	return $response;
-});
+// /lang/new
+$app->get('/lang/new', ErrorController::errorAction('This page is a work in progress.'));
+
+// /lang/{langCode}
+$app->get('/lang/{langCode}', LanguageController::listWordsAction());
+
+// /word/{wordId}
+$app->get('/word/{wordId}', WordController::editWordAction());
+$app->post('/word/{wordId}', WordController::saveWordAction());
+
+/* RUN APP */
 $app->run();
