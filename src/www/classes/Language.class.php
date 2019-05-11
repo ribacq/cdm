@@ -5,7 +5,7 @@ class Language {
 	private $notes;
 	private $words;
 
-	public static function fetchFromDB(string $langCode, PDO $db) {
+	public static function fetchByCode(string $langCode, PDO $db) {
 		$sth = $db->prepare('select code, name, notes from cdm.language where code = :langCode;');
 		$sth->execute(['langCode' => $langCode]);
 		$langRow = $sth->fetch(PDO::FETCH_ASSOC);
@@ -13,14 +13,18 @@ class Language {
 		if (!$langRow) {
 			return false;
 		}
-		return new Language($langRow['code'], $langRow['name'], $langRow['notes']);
+		$lang = new Language($langRow['code'], $langRow['name'], $langRow['notes']);
+		$lang->fetchWords($db);
+		return $lang;
 	}
 
 	public static function fetchAll(PDO $db) {
 		$sth = $db->query('select code, name, notes from cdm.language;');
 		$ret = array();
-		foreach ($sth->fetchAll() as $lang) {
-			$ret []= new Language($lang['code'], $lang['name'], $lang['notes']);
+		foreach ($sth->fetchAll() as $langData) {
+			$lang = new Language($langData['code'], $langData['name'], $langData['notes']);
+			$lang->fetchWords($db);
+			$ret []= $lang;
 		}
 		$sth->closeCursor();
 		return $ret;
@@ -49,9 +53,9 @@ class Language {
 		return count($this->words);
 	}
 
-	public function fetchWordsFromDB(PDO $db): int {
+	public function fetchWords(PDO $db): int {
 		$nbWords = 0;
-		$sth = $db->prepare('select orthography, id, pronounciation, notes, pragmatics, grammar_notes from cdm.word where lang = :lang;');
+		$sth = $db->prepare('select orthography, id, pronounciation, notes, pragmatics, grammar_notes from cdm.word where lang = :lang order by orthography;');
 		$sth->execute(['lang' => $this->code]);
 		foreach ($sth->fetchAll() as $wordData) {
 			$word = new Word(

@@ -48,7 +48,7 @@ class Word {
 		if (!$wordData) {
 			return false;
 		}
-		$lang = Language::fetchFromDB($wordData['lang'], $db);
+		$lang = Language::fetchByCode($wordData['lang'], $db);
 		return new Word(
 			$lang,
 			$wordData['orthography'],
@@ -61,23 +61,41 @@ class Word {
 	}
 
 	public function updateInDb(PDO $db) {
-		$sth = $db->prepare('update cdm.word set
-			lang = :lang,
-			orthography = :orthography,
-			pronounciation = :pronounciation,
-			notes = :notes,
-			pragmatics = :pragmatics,
-			grammar_notes = :grammar_notes
-			where id = :id;'
-		);
-		$sth->execute([
-			'lang' => $this->language->getCode(),
-			'orthography' => $this->orthography,
-			'pronounciation' => $this->pronounciation,
-			'notes' => $this->notes,
-			'pragmatics' => $this->pragmatics,
-			'grammar_notes' => $this->grammarNotes,
-			'id' => $this->id
-		]);
+		if ($this->id != -1) {
+			// update word
+			$sth = $db->prepare('update cdm.word set
+				lang = :lang,
+				orthography = :orthography,
+				pronounciation = :pronounciation,
+				notes = :notes,
+				pragmatics = :pragmatics,
+				grammar_notes = :grammar_notes
+				where id = :id;'
+			);
+			$sth->execute([
+				'lang' => $this->language->getCode(),
+				'orthography' => $this->orthography,
+				'pronounciation' => $this->pronounciation,
+				'notes' => $this->notes,
+				'pragmatics' => $this->pragmatics,
+				'grammar_notes' => $this->grammarNotes,
+				'id' => $this->id
+			]);
+		} else {
+			// new word
+			$sth = $db->prepare('insert into cdm.word
+				(lang, orthography, pronounciation, notes, pragmatics, grammar_notes)
+				values
+				(:lang, :orthography, :pronounciation, :notes, :pragmatics, :grammar_notes);'
+			);
+			$sth->execute([
+				'lang' => $this->language->getCode(),
+				'orthography' => $this->orthography,
+				'pronounciation' => $this->pronounciation,
+				'notes' => $this->notes,
+				'pragmatics' => $this->pragmatics,
+				'grammar_notes' => $this->grammarNotes,
+			]);
+		}
 	}
 }

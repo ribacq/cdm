@@ -15,15 +15,18 @@ class LanguageController {
 	public static function listWordsAction() {
 		return function (Request $request, Response $response, array $args) {
 			$langCode = $args['langCode'];	
-			$lang = Language::fetchFromDB($langCode, $this->db);
+			$lang = Language::fetchByCode($langCode, $this->db);
 			if (!$lang) {
 				return ErrorController::errorAction($request, $response, 'Language not found');
 			}
-			$lang->fetchWordsFromDB($this->db);
+			$lang->fetchWords($this->db);
 
 			$response = $this->view->render($response, 'page_header.php', ['title' => 'Language: '.$lang->getName()]);
+			if ($request->getAttribute('wordSaved')) {
+				$response = $this->view->render($response, 'alert_component.php', ['message' => 'Word saved successfully!']);
+			}
 			$response = $this->view->render($response, 'language_info_component.php', ['language' => $lang]);
-			$response = $this->view->render($response, 'words_list_component.php', ['words' => $lang->getWords()]);
+			$response = $this->view->render($response, 'words_list_component.php', ['words' => $lang->getWords(), 'language' => $lang]);
 			$response = $this->view->render($response, 'page_footer.php');
 			return $response;
 		};

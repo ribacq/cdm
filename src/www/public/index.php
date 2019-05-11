@@ -23,6 +23,9 @@ $container['db'] = function($c) {
 };
 $container['view'] = new \Slim\Views\PhpRenderer('../templates/');
 
+/* MIDDLEWARE */
+$app->add(WordController::saveWordMW());
+
 /* ROUTES */
 // /
 $app->get('/', LanguageController::listLanguagesAction());
@@ -34,11 +37,10 @@ $app->get('/lang', LanguageController::listLanguagesAction());
 $app->get('/lang/new', ErrorController::errorAction('This page is a work in progress.'));
 
 // /lang/{langCode}
-$app->get('/lang/{langCode}', LanguageController::listWordsAction());
+$app->map(['GET', 'POST'], '/lang/{langCode}', LanguageController::listWordsAction());
 
 // /word/{wordId}
-$app->get('/word/{wordId}', WordController::editWordAction());
-$app->post('/word/{wordId}', WordController::saveWordAction());
+$app->map(['GET', 'POST'], '/word/{wordId}', WordController::editWordAction());
 
 /* RUN APP */
 $app->run();
